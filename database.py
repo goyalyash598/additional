@@ -7,7 +7,7 @@ import re
 mongo_connection_string = st.secrets["mongo"]["connection_string"]
 client = MongoClient(mongo_connection_string)
 db = client.questions_db
-questions_collection = db.questions5
+questions_collection = db.questions
 buffer_collection = db.buffer
 data_collection = db.data
 
