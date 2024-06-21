@@ -27,26 +27,26 @@ def send_insomnia_request(question):
                 # "QuestionOptions": 
                 "QuestionOptions": [
                     {
-                    "QuestionOptionText": temp['a'].lower() ,
-                    "IsCorrect": "True" if temp['a'].lower() in question["Answer"].lower()  else "False",
+                    "QuestionOptionText": temp[0].lower() ,
+                    "IsCorrect": "True" if temp[0][temp[0].find(":"):].lower() in question["Answer"].lower()  else "False",
                     "SortOrder": "1",
                     "Notes": "12"
                     },
                     {
-                    "QuestionOptionText": temp['b'].lower() ,
-                    "IsCorrect": "True" if temp['b'].lower()  in question["Answer"].lower()  else "False",
+                    "QuestionOptionText": temp[1].lower() ,
+                    "IsCorrect": "True" if temp[1][temp[1].find(":"):].lower()  in question["Answer"].lower()  else "False",
                     "SortOrder": "1",
                     "Notes": "12"
                     },
                     {
-                    "QuestionOptionText": temp['c'].lower() ,
-                    "IsCorrect": "True" if temp['c'].lower()  in question["Answer"].lower()  else "False",
+                    "QuestionOptionText": temp[2].lower() ,
+                    "IsCorrect": "True" if temp[2][temp[2].find(":"):].lower()  in question["Answer"].lower()  else "False",
                     "SortOrder": "1",
                     "Notes": "12"
                     },
                     {
-                    "QuestionOptionText": temp['d'].lower() ,
-                    "IsCorrect": "True" if temp['d'].lower()  in question["Answer"].lower()  else "False",
+                    "QuestionOptionText": temp[3].lower() ,
+                    "IsCorrect": "True" if temp[3][temp[3].find(":"):].lower()  in question["Answer"].lower()  else "False",
                     "SortOrder": "1",
                     "Notes": "12"
                     }
@@ -69,8 +69,8 @@ def send_insomnia_request(question):
             }
         })
     
-    with open('payload.json', 'w') as f:
-        f.write(payload)
+    # with open('payload.json', 'w') as f:
+    #     f.write(payload)
 
     headers = {
         'cookie': "ARRAffinity=23564d5724d5738e1473c580c4ceefbbbe719a290964305a0fb76422b865e31c; ARRAffinitySameSite=23564d5724d5738e1473c580c4ceefbbbe719a290964305a0fb76422b865e31c",
@@ -165,10 +165,57 @@ def save_questions_to_db(questions, question_type,bloom):
 
         i["question_type"] = question_type
         i["Bloom's Index"] = bloom_index[bloom]
-    questions_collection.insert_many(jsonObject)
-    buffer_collection.insert_many(jsonObject)
+
+    # print(len(jsonObject))
+    #Call latex converter
+    latexObj = json_to_latex(jsonObject,question_type)
+    # st.write(latexObject)
+    # with open("latextest.txt", "w",encoding='utf-8') as f:
+    #     f.write(str(latexObj))
+    st.success("Successfully wrote in latex file")
+    questions_collection.insert_many(latexObj)
+    buffer_collection.insert_many(latexObj)
     st.success("Questions stored in MongoDB successfully")
 
+
+
+def json_to_latex(questions, question_type):
+    # questions = json.loads(questions_json)
+    latex_output = ""
+    latexObject = []
+    if question_type == "Descriptive" or question_type == "Fill in the Blanks":
+        for question in questions:
+            temp = dict()
+            question_text = question['Question']
+            answer_text = question['Answer']
+            temp["Question"] = f"\\textbf{{Question}}: {question_text}\n\n"
+            temp ["Answer"] = f"\\textbf{{Answer}}: {answer_text}\n\n"
+            temp["question_type"] = question_type
+            temp["Bloom's Index"] = question["Bloom's Index"]
+            latexObject.append(temp)
+    elif question_type == "MCQ":
+        for question in questions:
+            temp = dict()
+            question_text = question['Question']
+            answer_text = question['Answer']
+            temp["Question"] = f"\\textbf{{Question}}: {question_text}\n\n"
+            # latex_output = f"\\begin{{itemize}}\n"
+            d1 = question["Options"]
+            temp["Options"] = []
+            # for option in d1.keys():
+            #     latex_output += f"  \\item {d1[option]}\n"
+            # latex_output += f"\\end{{itemize}}\n\n"
+            for option in d1.keys() :
+                temp["Options"].append(f"\\textbf{{Option}}: {option}) {d1[option]}\n\n")
+            # temp["Options"] = latex_output
+            temp["Answer"] = f"\\textbf{{Answer}}: {answer_text}\n\n"
+            temp["question_type"] = question_type
+            temp["Bloom's Index"] = question["Bloom's Index"]
+            latexObject.append(temp)
+    else:
+        raise ValueError("Invalid question_type provided. It must be 'Descriptive', 'Fill in the Blanks', or 'MCQ'.")
+
+    return latexObject
 
 def store_in_api():
     jsonObject = get_all_questions()
