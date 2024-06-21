@@ -7,7 +7,7 @@ import re
 mongo_connection_string = st.secrets["mongo"]["connection_string"]
 client = MongoClient(mongo_connection_string)
 db = client.questions_db
-questions_collection = db.questions
+questions_collection = db.questions5
 buffer_collection = db.buffer
 data_collection = db.data
 
@@ -96,6 +96,15 @@ def save_questions_to_db(questions, question_type,bloom):
     r'\*\*Answer:\*\* (.*?)\n',re.DOTALL)
         matches = pattern.findall(questions)
 
+        if not matches:
+            pattern = re.compile(r'\*\*Question \d+:\*\* (.*?)\n\n\*\*Options:\*\*\n\n'
+            r'a\) (.*?)\n'
+            r'b\) (.*?)\n'
+            r'c\) (.*?)\n'
+            r'd\) (.*?)\n'
+            r'\*\*Answer:\*\* (.*?)\n',re.DOTALL)
+            matches = pattern.findall(questions)
+            # print("test")
         # Check if matches is empty
         if not matches:
             st.write("JSON CONVERSION ERROR MCQ")
