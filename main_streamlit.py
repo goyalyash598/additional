@@ -9,7 +9,6 @@ import os
 
 st.set_page_config(page_title="My Streamlit App", page_icon="❓")
 st.title("📄 PDF/Text Question Generator")
-
 st.markdown("""Welcome to the PDF/Text Question Generator! This tool allows you to upload a PDF file or input text directly to generate detailed questions.""")
 
 st.sidebar.header("Available Model Options")
@@ -34,6 +33,7 @@ if input_type == "PDF File":
     language = st.sidebar.selectbox("Select Language of the PDF", ("English", "Hindi"))
 else:
     text_input = st.sidebar.text_area("Enter your text")
+    language = st.sidebar.selectbox("Select Language of the PDF", ("English", "Hindi"))
 
 prompt = st.sidebar.text_area("Enter your prompt for generating questions", height=100)
 question_type = st.sidebar.selectbox("Select type of questions to generate", ("Descriptive", "MCQ", "Fill in the Blanks"))
@@ -71,6 +71,8 @@ if generate_questions_flag:
         if combined_text:
             with st.spinner("Generating questions..."):
                 questions = generate_questions(model, m, combined_text, prompt, question_type, question_level, bloom, language, num_questions)
+                # with open("test.txt", "w", encoding="utf-8" ) as f:
+                #     f.write(questions)
         else:
             st.write("No data available. Upload File again")
         # print(questions)
@@ -99,7 +101,7 @@ if generate_questions_flag:
         st.success("Questions generated successfully!")
         st.markdown("### Generated Questions")
         st.write(questions)
-        save_questions_to_db(questions, question_type)
+        save_questions_to_db(questions, question_type, bloom)
     else:
         st.error("Please upload a PDF file or enter text, and enter a prompt.")
         combined_text = None
@@ -129,7 +131,7 @@ if st.sidebar.button("Send API Request"):
 
 st.sidebar.markdown("<h2>PDF Splitter</h2>", unsafe_allow_html=True)
 split_pdf_file = st.sidebar.file_uploader("Upload a PDF file for splitting", type=["pdf"])
-page_ranges = st.sidebar.text_input("Enter page ranges (e.g., 10-30, 50-60)")
+page_ranges = st.sidebar.text_input("Enter page ranges (e.g., 1-3, 4-5)")
 split_button = st.sidebar.button("Split PDF")
 
 def split_pdf(input_pdf, output_folder, page_range):
