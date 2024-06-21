@@ -100,13 +100,15 @@ def preprocess_images(image_merge,model,m):
                     
             chat_session = modelImage.start_chat(
                     history=[
-                            {"role": "user", "parts": ["from my local image path, summarize the given image", image_file]},
+                            {"role": "user", "parts": ["Understand the image and learn the concepts in it, summarize the given image", image_file]},
                             {"role": "model", "parts": ["Your description of the image goes here."]},
                         ]
                     )
-            response = chat_session.send_message("Describe the image in more detail.").text
+            response = chat_session.send_message("Understand the image and Describe the image in more detail.").text
          
             image_descriptions.append(response)
+
+            # print(image_descriptions)
 
             os.remove(image_path)
         except Exception as e:
