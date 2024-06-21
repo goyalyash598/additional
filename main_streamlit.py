@@ -52,8 +52,8 @@ def ocr_from_pdf(file_path):
             image = page.to_image()
             page_text = pytesseract.image_to_string(image.original, lang='hin')
             text += page_text + "\n\n"  # Add some spacing between pages
-            print(f"Extracted text from page {i + 1}:\n", page_text)
-            print("\n" + "="*80 + "\n")  # Separator for better readability
+            # print(f"Extracted text from page {i + 1}:\n", page_text)
+            # print("\n" + "="*80 + "\n")  # Separator for better readability
     return text
 
 if generate_questions_flag:
@@ -67,15 +67,23 @@ if generate_questions_flag:
                 save_data_to_db(combined_text)
             st.session_state.uploaded_pdf = pdf_file
         combined_text = get_data()
+        # st.write(combined_text)
         if combined_text:
             with st.spinner("Generating questions..."):
                 questions = generate_questions(model, m, combined_text, prompt, question_type, question_level, bloom, language, num_questions)
         else:
             st.write("No data available. Upload File again")
-        
+        # print(questions)
+        # with open("logs.txt",'w') as f:
+        #     f.write(questions)
+        # with open("logs.txt",'r') as f:
+        #     temp = f.read() 
+        # print(type(questions))
         st.success("Questions generated successfully!")
         st.markdown("### Generated Questions")
         st.write(questions)
+
+        
         save_questions_to_db(questions, question_type,bloom)
 
     elif input_type == "Text Input" and text_input:
@@ -121,7 +129,7 @@ if st.sidebar.button("Send API Request"):
 
 st.sidebar.markdown("<h2>PDF Splitter</h2>", unsafe_allow_html=True)
 split_pdf_file = st.sidebar.file_uploader("Upload a PDF file for splitting", type=["pdf"])
-page_ranges = st.sidebar.text_input("Enter page ranges (e.g., 1-3, 4-5)")
+page_ranges = st.sidebar.text_input("Enter page ranges (e.g., 10-30, 50-60)")
 split_button = st.sidebar.button("Split PDF")
 
 def split_pdf(input_pdf, output_folder, page_range):
